@@ -1,0 +1,5 @@
+[HKEY_CURRENT_USER\Software\Wine\WineDbg]
+"ShowCrashDialog"="dword:00000001"
+
+[HKEY_CURRENT_USER\Software\Wine\WineDbg]
+"ShowCrashDialog"=dword:00000001
