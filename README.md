@@ -10,7 +10,7 @@ In short it's a PNG optimiser that makes use of other utilities, that tries to a
  * Brute forcing of images using all present utilities with max compression settings, if you're really brave to wait a bit.
  * Multiple Architecture Support, given that the script is a shell script and most projects fetched are C/C++ based.
  * Multiple presets for fast, lossy and maximum (slow) compression using given tools.
- * Hands-free setup, run the updater and you're ready to go, no manual intervention required.#
+ * Hands-free setup, run the updater and you're ready to go, no manual intervention required.
  * Well balanced profiles by default.
 
 ### Benchmarks (First Release Version / 0.69)
@@ -22,6 +22,7 @@ I'm a realist, so these are realistic benchmarks of what you should really expec
 Tested with an i7 4790k CPU, overclocked to 4.5GHz (I know, pretty strong hardware at hand), those are all for lossless compression unless stated. These are Pingo-enabled benchmarks, thus in non-free mode.
 
 Note: These benchmarks were taken while I was working more heavily in the background, the benchmark would be approximately 5~15% faster on an unoccupied CPU.
+
 ### __Benchmarks - Simple Graphics/Digital Artwork__
 
 ##### Random Data Set of Small (and few larger) Images
@@ -36,6 +37,7 @@ Note: These benchmarks were taken while I was working more heavily in the backgr
 ##### Large Images
 
 I thought it would be worthwhile to add this, as with the expected behaviour of PNG compressors (unknown to some people), the time to crush images increases exponentially with both larger images and presets, it is recommended that you avoid using high profiles for very large images. The XOSTheme icon set is a set of 11 icons of 2300x2300 resolution, a deadly workload for image compressors. The original images here were saved by Photoshop, Slow PNG compression.
+
 | Sample        | Preset       | Reduction %  | Time |
 |:-------------:|:-------------:|:-----:|:-----:|
 | XOSTheme Icon Set (6.5MB) | --c1 (fast) | 58.180% | 9.875s (Real) |
@@ -47,16 +49,18 @@ Mode --c4 only exists for the brave...
 
 ##### JPEGs
 
-JPEGs compress very quickly and very efficiently with the tools used, needless to say the settings for JPEGs are identical for every compression level. Here the images were first converted to JPEG with convert -quality 100 (part of imagemagick) and then tested against the same sample. The magic is mostly done by the fantastic utilities available at jpeg-archive (git)
+JPEGs compress very quickly and very efficiently with the tools used, needless to say the settings for JPEGs are identical for every compression level. Here the images were first converted to JPEG with convert -quality 100 (part of imagemagick) and then tested against the same sample. The magic is mostly done by the fantastic utilities available at jpeg-archive (git).
+
 | Sample        | Preset       | Reduction %  | Time |
 |:-------------:|:-------------:|:-----:|:-----:|
 | XOSTheme Icon Set (No Transparency) | Any | 45.980% | 6.066s (Real) |
 
-In the end it should be notable that the actual JPEGs were larger than the PNGs made by the time-comparable --c1 preset for PNGs which also had to deal with transparency, although simple images are here at play which really is not the correct situation to test on JPEGs, for any image like a photo with a much deeper range of colours and complexity the JPEG format would win
+In the end it should be notable that the actual JPEGs were larger than the PNGs made by the time-comparable --c1 preset for PNGs which also had to deal with transparency, although simple images are here at play which really is not the correct situation to test on JPEGs, for any image like a photo with a much deeper range of colours and complexity the JPEG format would win.
 
 ##### JPEG Lossy
 
 Fancy going lossy? I can't deny, jpeg-archive and the projects that project is based on do this too well, you get your usual JPEG artifacts for a very strong reduction in size, which undercuts their lossless counterparts by a decent amount, although expected. This is still a high quality profile however despite being labelled as lossy as it targets approximately 93% quality, it should be transparent to the viewer unless the user specifically looks for JPEG artifacts which then simply become clear.
+
 | Sample        | Preset       | Reduction %  | Time |
 |:-------------:|:-------------:|:-----:|:-----:|
 | XOSTheme Icon Set (No Transparency) | --jpeg-lossy | 89.450% | 4.263s (Real) |
@@ -65,21 +69,23 @@ Fancy going lossy? I can't deny, jpeg-archive and the projects that project is b
 
 ### __Benchmarks - Wallpapers/Complex Digital Artwork__
 
-This benchmark consists of 575 1080p wallpapers found (mostly JPEG) in a random Imgur album weighing in at around 255MB (depending on conversions), the benchmarks are for pure PNG/JPEG here, so images not in format are converted losslessly to target test format with imagemagick.
+This benchmark consists of 575 1080p wallpapers found (mostly JPEG) in a [random Imgur album](http://imgur.com/a/akHsJ) weighing in at around 255MB (depending on conversions), the benchmarks are for pure PNG/JPEG here, so images not in format are converted losslessly to target test format with imagemagick.
 No extra details will be given in this section apart from the necessary, I'll just let the benchmarks roll and give you results.
 
 ##### JPEGs - Lossless
 Original Sample of JPEGs with the few PNG>JPEG conversions is 249512 Bytes.
+
 | Sample        | Preset       | Reduction %  | Space Saved |  Time |
 |:-------------:|:-------------:|:-----:|:-----:|:-----:|
-| Random Sample of 575 Wallpapers from an Album (Imgur) | Any | 12.310% | ~29.93MiB | 5m0.309s (Real) |
+| Random Sample of 575 Wallpapers | Any | 12.310% | ~29.93MiB | 5m0.309s (Real) |
 
 ##### JPEGs - Lossy
 Original Sample of JPEGs with the few PNG>JPEG conversions here is also 249512 Bytes.
 Target Quality = 93% (default JPEG lossy preset).
+
 | Sample        | Preset       | Reduction %  | Space Saved | Time |
 |:-------------:|:-------------:|:-----:|:-----:|:-----:|
-| Random Sample of 575 Wallpapers from an Album (Imgur) | --jpeg-lossy | 21.680% | ~52.72MiB | 2m25.978s (Real) |
+| Random Sample of 575 Wallpapers | --jpeg-lossy | 21.680% | ~52.72MiB | 2m25.978s (Real) |
 
 ##### Wallpapers - PNG Lossless
 Convertes Same Sample of PNGs with a lot of JPEG>PNG conversions. Size: 1380222 (~1.31GiB)
@@ -87,20 +93,17 @@ Few accidental duplicates making this a total of 581 images instead.
 
 | Sample        | Preset       | Reduction %  | Space Saved | Time |
 |:-------------:|:-------------:|:-----:|:-----:|:-----:|
-| Random Sample of 575 Wallpapers from an Album (Imgur) + Accidental Duplicates | --c2 (Standard) | 10.550% | ~142.25MiB | 46m35s (Real) |
+| Random Sample of 575 Wallpapers | --c2 (Standard) | 10.550% | ~142.25MiB | 46m35s (Real) |
 
 ##### Wallpapers - PNG 'Lossy Transparent' (Not to be confused with Lossy Loose)
 
 | Sample        | Preset       | Reduction %  | Space Saved | Time |
 |:-------------:|:-------------:|:-----:|:-----:|:-----:|
-| Random Sample of 575 Wallpapers from an Album (Imgur) + Accidental Duplicates | --c2 (Standard) --lossy-trans | 21.470% | ~289.35MiB | 35m48.321s (Real) |
+| Random Sample of 575 Wallpapers | --c2 (Standard) --lossy-trans | 21.470% | ~289.35MiB | 35m48.321s (Real) |
 
 
 ### __XOS Image Compressor Screenshots__
-![XOS IO](http://i.imgur.com/ly7T3pi.png)
-![XOS IO](http://i.imgur.com/3hpMlvi.png)
-![XOS IO](http://i.imgur.com/MAk79Gx.png)
-
+Imgur Album: http://imgur.com/a/AUwth
 
 ### To Do
 * Automatic benchmarking mode for different profiles and utilities.
@@ -114,7 +117,8 @@ __Standard Modes__
 * [Efficient-Compression-Tool](https://github.com/fhanau/Efficient-Compression-Tool) - [Contributors](https://github.com/fhanau/Efficient-Compression-Tool/graphs/contributors)
 * [jpeg-recompress](https://github.com/danielgtaylor/jpeg-archive) - [Contributors](https://github.com/danielgtaylor/jpeg-archive/graphs/contributors)
 * [PNGQuant](https://github.com/pornel/pngquant) - [Contributors](https://github.com/pornel/pngquant/graphs/contributors)
----
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 * [Pingo (In Early Development)]() - Cédric Louvrier, [Fork of Efficient-Compression-Tool](https://github.com/fhanau/Efficient-Compression-Tool) __[OPTIONAL]__ __[RECOMMENDED]__ __[CURRENTLY NON-FREE (To be changed in the future)]__
 
 
@@ -124,7 +128,8 @@ __Brute Force Modes__
 * [PNGCrush](http://pmt.sourceforge.net/pngcrush/) - Glenn Randers-Pehrson
 * [JPEGOptim](https://github.com/tjko/jpegoptim) - [Contributors](https://github.com/tjko/jpegoptim/graphs/contributors)
 * [OptiPNG](http://optipng.sourceforge.net/) - [Contributors](http://optipng.sourceforge.net/authors.txt)
----
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 * [TruePNG](http://x128.ho.ua/pngutils.html) - x128  __[OPTIONAL]__ __[NON-FREE]__
 * [PNGOUT](http://www.jonof.id.au/kenutils)  - Ken Silverman, Jonathon Fowler (Linux/OSX port) - __[OPTIONAL]__ __[NON-FREE]__ __[NON-REDISTRIBUTABLE*]__
 
