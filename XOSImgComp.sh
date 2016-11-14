@@ -45,7 +45,9 @@ HAS_SYSTEM_DEPENDENCIES=Y;
 COMPRESSION_LEVEL=2
 JPEG_LOSSY_MODE=0
 LOSSY_MODE=0
+STRIP_MODE=1
 FREE_MODE=0
+QUANT_MODE=1
 
 ## Shell In-Replacement Colours For Text - Sewer Palette
 ColourReset=`tput sgr0`
@@ -96,28 +98,48 @@ SizeWrapper() {
   CompareSize
 }
 
+
+## Set extra flags for options
+SetExtraFlags() {
+  if [[ ${STRIP_MODE} -eq 0 ]]; then
+    TruePNGStripMetadata=""
+    PNGOutStripMetadata="-k1"
+    ECTStripMetadata=""
+    JPEGOptimStripMetadata=""
+    JPEGArchiveStripMetadata=""
+  fi
+}
+
+## Default flags
+TruePNGStripMetadata="/md remove all"
+PNGOutStripMetadata="-k0"
+ECTStripMetadata="-strip"
+JPEGOptimStripMetadata="--strip-all"
+JPEGArchiveStripMetadata="--strip"
+
+
 ## Brute Force Section
 CompressZopfliPNG () { SizeWrapper "$WORKING_DIRECTORY/bin/zopflipng -m -y --filters=01234mepb --lossy_8bit --lossy_transparent" &> /dev/null; }
 CompressADVDef () { $WORKING_DIRECTORY/bin/advdef -z4 "${Input}" &> /dev/null; }
-CompressTruePNG() { wine cmd.exe /c $WORKING_DIRECTORY/bin/TruePNG.exe "${Input}" /o max &> /dev/null; }
-CompressPNGOut() { $WORKING_DIRECTORY/bin/pngout -k0 -d0 "${Input}" &> /dev/null; }
+CompressTruePNG() { wine cmd.exe /c $WORKING_DIRECTORY/bin/TruePNG.exe "${Input}" "/zc9 /zm1-9 /zs0,1,3 /fe /a1 /i0 ${TruePNGStripMetadata}" &> /dev/null; }
+CompressPNGOut() { $WORKING_DIRECTORY/bin/pngout -k0 ${PNGOutStripMetadata} "${Input}" &> /dev/null; }
 CompressPNGCrush() { SizeWrapper "$WORKING_DIRECTORY/bin/pngcrush -brute -blacken "${Input}" "${Input}.new"" &> /dev/null; }
 CompressOptiPNG() { $WORKING_DIRECTORY/bin/optipng -o7 "${Input}" &> /dev/null; }
 
 
 ## Default Section
-CompressPingo() { wine "$WORKING_DIRECTORY/bin/Pingo.exe" -s5 "${Input}" &> /dev/null; }
-CompressPNGQuant() { "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 99-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; }
-CompressPNGQuantLossy() { "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 93-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; }
-CompressPNGQuantLooseLossy() { "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 70-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; }
-CompressECTFast() { "$WORKING_DIRECTORY/bin/ect" -3 -strip -quiet "${Input}"; }
-CompressECTMax() { "$WORKING_DIRECTORY/bin/ect" -8 -strip -quiet --allfilters-b "${Input}"; }
-CompressECT() { "$WORKING_DIRECTORY/bin/ect" -8 -strip -quiet "${Input}"; }
+CompressPingo() { if [ ${STRIP_MODE} -eq 1 ]; then wine "$WORKING_DIRECTORY/bin/Pingo.exe" -s5 "${Input}" &> /dev/null; fi }
+CompressPNGQuant() { if [ ${QUANT_MODE} -eq 1 ]; then echo "QUANT"; "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 100-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
+CompressPNGQuantLossy() { if [ ${QUANT_MODE} -eq 1 ]; then "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 93-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
+CompressPNGQuantLooseLossy() { if [ ${QUANT_MODE} -eq 1 ]; then "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 70-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
+CompressECTFast() { "$WORKING_DIRECTORY/bin/ect" -3 ${ECTStripMetadata} -quiet "${Input}"; }
+CompressECTMax() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet --allfilters-b "${Input}"; }
+CompressECT() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet "${Input}"; }
 
 ## JPEG Section
-CompressJPEGOptim() { "$WORKING_DIRECTORY/bin/jpegoptim" --strip-all "${Input}" &> /dev/null; }
-CompressJPEGArchive() { SizeWrapper "$WORKING_DIRECTORY/bin/jpegrecompress --min 100 --max 100 --accurate -m smallfry -s -Q"; }
-CompressJPEGArchiveLossy() { SizeWrapper "$WORKING_DIRECTORY/bin/jpegrecompress --quality veryhigh --accurate --method smallfry --strip -Q"; }
+CompressJPEGOptim() { "$WORKING_DIRECTORY/bin/jpegoptim" ${JPEGOptimStripMetadata} "${Input}" &> /dev/null; }
+CompressJPEGArchive() { SizeWrapper "$WORKING_DIRECTORY/bin/jpegrecompress --min 100 --max 100 --accurate -m smallfry ${JPEGArchiveStripMetadata} -Q"; }
+CompressJPEGArchiveLossy() { SizeWrapper "$WORKING_DIRECTORY/bin/jpegrecompress --quality veryhigh --accurate --method smallfry ${JPEGArchiveStripMetadata} -Q"; }
 
 ## Extra
 PNGQuantReductionCheck() {
@@ -213,6 +235,7 @@ CompressionLevelFour(){
 }
 
 CompressionPath(){
+  SetExtraFlags
   case "$COMPRESSION_LEVEL" in
     1 ) CompressionLevelOne;;
     2 ) CompressionLevelTwo;;
@@ -402,6 +425,8 @@ Display_Help() {
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--c") ${ColourReset}| Compression level (1-4). Fast, Standard, Max & Brute Force"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--deps") ${ColourReset}| Check Utility and System Dependencies"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--lossy") ${ColourReset}| Reduce palette (pngquant) to 256 colours if Quality >= 70%"
+  echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--noquant") ${ColourReset}| Do not perform quantization. (PNGQuant -Q 100 can be lossy)"
+  echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--nostrip") ${ColourReset}| Do not strip metadata from the images."
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--lossy-trans") ${ColourReset}| Reduce palette (pngquant) to 256 colours if Quality >= 93%"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--jpeg-lossy") ${ColourReset}| Target 93% Quality for JPEG images (default: 100% lossless)"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--stallman") ${ColourReset}| Do not use nonfree software even if installed by the updater"
@@ -514,6 +539,8 @@ do
   if [[ $Argument == "--deps"* ]]; then PrintDependencies; fi
   if [[ $Argument == "--tips"* ]]; then PrintTips; fi
   if [[ $Argument == "--lossy" ]]; then LOSSY_MODE=2; fi
+  if [[ $Argument == "--nostrip"* ]]; then STRIP_MODE=0; fi
+  if [[ $Argument == "--noquant"* ]]; then QUANT_MODE=0; fi
   if [[ $Argument == "--jpeg-lossy" ]]; then JPEG_LOSSY_MODE=1; fi
   if [[ $Argument == "--pingofix1" ]]; then regedit "$WORKING_DIRECTORY/winescripts/DisableCrashDialog.REG"; elif [[ $Argument == "--pingofix0" ]]; then regedit "$WORKING_DIRECTORY/winescripts/EnableCrashDialog.REG"; fi
   if [[ $Argument == "--lossy-trans" ]]; then LOSSY_MODE=1; fi
