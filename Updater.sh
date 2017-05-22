@@ -631,7 +631,7 @@ Display_Help() {
   Center_Help_Vertical
   Center_Help_Horizontal
   echo ""
-  CenterTextHighlight "${ColourInfo}XOS Image Compressor v0.69${ColourReset}"
+  CenterTextHighlight "${ColourInfo}XOS Image Compressor v0.70${ColourReset}"
   echo ""
   CenterTextHighlight "To run the updater simply specify the ${ColourInfo}--update${ColourReset} argument"
   echo ""

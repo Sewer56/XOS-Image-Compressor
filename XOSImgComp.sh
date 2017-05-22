@@ -414,7 +414,7 @@ Display_Help() {
   Center_Help_Vertical ## Spaces to center message.
   Center_Help_Horizontal ## Spaces to center message args.
   echo ""
-  CenterTextHighlight "${ColourInfo}XOS Image Compressor v0.69${ColourReset}"
+  CenterTextHighlight "${ColourInfo}XOS Image Compressor v0.70${ColourReset}"
   echo ""
   CenterTextHighlight "To compress simply specify ${ColourInfo}an image or directory${ColourReset} as an argument"
   echo ""
