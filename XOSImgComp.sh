@@ -29,7 +29,8 @@
 
 ## Declare the Working Variable
 WORKING_DIRECTORY="${0%/*}"
-CPU_CORES="$((`nproc`+1))"
+CPU_CORES="$((`nproc`-1))"
+WINE="wine"
 SCRIPT_PATH="$0"
 clear
 
@@ -121,20 +122,20 @@ JPEGArchiveStripMetadata="--strip"
 ## Brute Force Section
 CompressZopfliPNG () { SizeWrapper "$WORKING_DIRECTORY/bin/zopflipng -m -y --filters=01234mepb --lossy_8bit --lossy_transparent" &> /dev/null; }
 CompressADVDef () { $WORKING_DIRECTORY/bin/advdef -z4 "${Input}" &> /dev/null; }
-CompressTruePNG() { wine cmd.exe /c $WORKING_DIRECTORY/bin/TruePNG.exe "${Input}" "/zc9 /zm1-9 /zs0,1,3 /fe /a1 /i0 ${TruePNGStripMetadata}" &> /dev/null; }
+CompressTruePNG() { $WINE cmd.exe /c $WORKING_DIRECTORY/bin/TruePNG.exe "${Input}" "/zc9 /zm1-9 /zs0,1,3 /fe /a1 /i0 ${TruePNGStripMetadata}" &> /dev/null; }
 CompressPNGOut() { $WORKING_DIRECTORY/bin/pngout -k0 ${PNGOutStripMetadata} "${Input}" &> /dev/null; }
 CompressPNGCrush() { SizeWrapper "$WORKING_DIRECTORY/bin/pngcrush -brute -blacken "${Input}" "${Input}.new"" &> /dev/null; }
 CompressOptiPNG() { $WORKING_DIRECTORY/bin/optipng -o7 "${Input}" &> /dev/null; }
 
 
 ## Default Section
-CompressPingo() { if [ ${STRIP_MODE} -eq 1 ]; then wine "$WORKING_DIRECTORY/bin/Pingo.exe" -s5 "${Input}" &> /dev/null; fi }
-CompressPNGQuant() { if [ ${QUANT_MODE} -eq 1 ]; then echo "QUANT"; "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 100-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
+CompressPingo() { if [ ${STRIP_MODE} -eq 1 ]; then $WINE "$WORKING_DIRECTORY/bin/Pingo.exe" -s7 "${Input}" &> /dev/null; fi }
+CompressPNGQuant() { if [ ${QUANT_MODE} -eq 1 ]; then "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 100-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
 CompressPNGQuantLossy() { if [ ${QUANT_MODE} -eq 1 ]; then "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 93-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
 CompressPNGQuantLooseLossy() { if [ ${QUANT_MODE} -eq 1 ]; then "$WORKING_DIRECTORY/bin/pngquant" --skip-if-larger --output "${Input}.new.pngquant" --quality 70-100 --speed 1 "${Input}" &> /dev/null; PNGQuantReductionCheck; fi }
-CompressECTFast() { "$WORKING_DIRECTORY/bin/ect" -3 ${ECTStripMetadata} -quiet "${Input}"; }
-CompressECTMax() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet --allfilters-b "${Input}"; }
-CompressECT() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet "${Input}"; }
+CompressECTFast() { "$WORKING_DIRECTORY/bin/ect" -3 ${ECTStripMetadata} -quiet "${Input}" &> /dev/null;}
+CompressECTMax() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet --allfilters-b "${Input}" &> /dev/null;}
+CompressECT() { "$WORKING_DIRECTORY/bin/ect" -8 ${ECTStripMetadata} -quiet "${Input}" &> /dev/null;}
 
 ## JPEG Section
 CompressJPEGOptim() { "$WORKING_DIRECTORY/bin/jpegoptim" ${JPEGOptimStripMetadata} "${Input}" &> /dev/null; }
@@ -430,6 +431,7 @@ Display_Help() {
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--lossy-trans") ${ColourReset}| Reduce palette (pngquant) to 256 colours if Quality >= 93%"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--jpeg-lossy") ${ColourReset}| Target 93% Quality for JPEG images (default: 100% lossless)"
   echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--stallman") ${ColourReset}| Do not use nonfree software even if installed by the updater"
+  echo "$(printf "%$(($ArgsSpacing))s" "")${ColourInfo}$(printf "%13s" "--WSL") ${ColourReset}| Use if using Windows Subsystem for Linux (Creators of Later)"
   echo ""
   if [ $NONFREE_STATUS == "N" ]; then CenterTextHighlight "Status: ${ColourInfo}Free Software Only${ColourReset}"; else CenterTextHighlight "Status: ${ColourInfo}Using Non-Free Software${ColourReset}"; fi
   if [ $HAS_SYSTEM_DEPENDENCIES == "N" ]; then CenterTextStandout "${ColourStandout}Dependencies not found${ColourReset}"; elif [ $HAS_SYSTEM_DEPENDENCIES == "N" ]; then CenterTextStandout "${ColourStandout}System Dependencies not found${ColourReset}"; fi
@@ -545,6 +547,7 @@ do
   if [[ $Argument == "--pingofix1" ]]; then regedit "$WORKING_DIRECTORY/winescripts/DisableCrashDialog.REG"; elif [[ $Argument == "--pingofix0" ]]; then regedit "$WORKING_DIRECTORY/winescripts/EnableCrashDialog.REG"; fi
   if [[ $Argument == "--lossy-trans" ]]; then LOSSY_MODE=1; fi
   if [[ $Argument == "--stallman" ]]; then FREE_MODE=1; fi
+  if [[ $Argument == "--WSL" ]]; then WINE=""; fi
 done
 
 IdentifyInput

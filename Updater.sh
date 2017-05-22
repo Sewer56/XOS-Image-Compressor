@@ -30,15 +30,15 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 ## Declare the Working Variables
-WORKING_DIRECTORY="${0%/*}"
+WORKING_DIRECTORY="${PWD}"
 CPU_CORES="$((`nproc`+1))"
 SCRIPT_PATH="$0"
 HAS_DEPENDENCIES=Y
 clear
 
 ## Updater Configuration
-DEPENDENCY_ARRAY=("tput" "wget" "git" "gcc" "nasm" "boost")
-NONFREE_SOFTWARE_TARGETS=("$WORKING_DIRECTORY/bin/TruePNG.exe" "$WORKING_DIRECTORY/bin/pngout")
+declare -a DEPENDENCY_ARRAY=("tput" "wget" "git" "gcc" "nasm" "boost");
+declare -a NONFREE_SOFTWARE_TARGETS=("$WORKING_DIRECTORY/bin/TruePNG.exe" "$WORKING_DIRECTORY/bin/pngout");
 ENABLE_NONFREE=N
 UPDATE=N
 
@@ -65,16 +65,16 @@ BuildZopfliPNG() {
   echo "${ColourWarning}Building zopflipng-git${ColourReset}"
   echo "==> Cloning zopflipng"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/ZopfliPNG/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/ZopfliPNG/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/ZopfliPNG/" 
     git clone -q https://github.com/google/zopfli.git "$WORKING_DIRECTORY/Sources/ZopfliPNG/"
   fi
   cd "$WORKING_DIRECTORY/Sources/ZopfliPNG/"
   echo "==> Compiling zopflipng"
-  make -j$CPU_CORES zopflipng &> /dev/null
+  make -j$CPU_CORES zopflipng 
   echo "==> Moving binary"
   mv "$WORKING_DIRECTORY/Sources/ZopfliPNG/zopflipng" "$WORKING_DIRECTORY/bin/"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckZopfliPNG() {
@@ -101,11 +101,11 @@ UpdateZopfliPNG() {
     echo "==> Merging"
     git merge origin/master
     echo "==> Building"
-    make -j$CPU_CORES zopflipng &> /dev/null
+    make -j$CPU_CORES zopflipng 
     echo "==> Moving binary"
     mv "$WORKING_DIRECTORY/Sources/ZopfliPNG/zopflipng" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     if [ ! -f "$WORKING_DIRECTORY/bin/zopflipng" ]; then
@@ -120,16 +120,16 @@ BuildECT() {
   echo "${ColourWarning}Building ect-git${ColourReset}"
   echo "==> Cloning ect"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/ect/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/ect/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/ect/" 
     git clone -q https://github.com/fhanau/Efficient-Compression-Tool.git "$WORKING_DIRECTORY/Sources/ect/"
   fi
   cd "$WORKING_DIRECTORY/Sources/ect/src/"
   echo "==> Compiling ect (non-multithreaded compilation)"
-  make &> /dev/null
+  make 
   echo "==> Moving binary"
   mv "$WORKING_DIRECTORY/Sources/ect/ECT" "$WORKING_DIRECTORY/bin/ect"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckECT() {
@@ -157,11 +157,11 @@ UpdateECT() {
     git merge origin/master
     cd "$WORKING_DIRECTORY/Sources/ect/src/"
     echo "==> Building"
-    make -j$CPU_CORES &> /dev/null
+    make -j$CPU_CORES 
     echo "==> Moving binary"
     mv "$WORKING_DIRECTORY/Sources/ect/src/ect" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     if [ ! -f "$WORKING_DIRECTORY/bin/ect" ]; then
@@ -174,24 +174,24 @@ UpdateECT() {
 
 FetchPNGCrush() {
   echo "${ColourWarning}Fetching PNGCrush (sf)${ColourReset}"
-  mkdir -p "$WORKING_DIRECTORY/Sources/PNGCrush" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/Sources/PNGCrush" 
   cd "$WORKING_DIRECTORY/Sources/PNGCrush"
 
   ##Note: At the time of writing this was actually not the 'latest' source, but has been marked so by the author.
   echo "==> Downloading latest source"
-  if [ -f "PNGCrush.tar.xz" ]; then
+  if [ -f "PNGCrush.7z" ]; then
     echo "==> PNGCrush previously downloaded"
-    wget --content-disposition -O PNGCrush.tar.xz.1 "https://sourceforge.net/projects/pmt/files/latest/download?source=files" &> /dev/null
-    MD5Orig="$(md5sum "PNGCrush.tar.xz" | cut -d ' ' -f 1)"
-    MD5New="$(md5sum "PNGCrush.tar.xz.1" | cut -d ' ' -f 1)"
+    wget --content-disposition -O PNGCrush.7z.1 "https://sourceforge.net/projects/pmt/files/latest/download?source=files" 
+    MD5Orig="$(md5sum "PNGCrush.7z" | cut -d ' ' -f 1)"
+    MD5New="$(md5sum "PNGCrush.7z.1" | cut -d ' ' -f 1)"
     if [ ! $MD5Orig == $MD5New ]; then
       echo "==> MD5 of both ZIPs do not match, recompiling!"
-      rm -rf "PNGCrush.tar.xz"
-      mv "PNGCrush.tar.xz.1" "PNGCrush.tar.xz"
+      rm -rf "PNGCrush.7z"
+      mv "PNGCrush.7z.1" "PNGCrush.7z"
       BuildPNGCrush
     else
       echo "==> MD5 of both ZIPs match, no update is needed"
-      rm -rf "PNGCrush.tar.xz.1"
+      rm -rf "PNGCrush.7z.1"
       if [ ! -f "$WORKING_DIRECTORY/bin/pngcrush" ]; then
         echo "==> ${ColourInfo}Sources present but no binary, recompiling."
         BuildPNGCrush
@@ -199,7 +199,7 @@ FetchPNGCrush() {
       return
     fi
   else
-    wget --content-disposition -O PNGCrush.tar.xz "https://sourceforge.net/projects/pmt/files/latest/download?source=files" &> /dev/null
+    wget --content-disposition -O PNGCrush.7z "https://sourceforge.net/projects/pmt/files/latest/download?source=files" 
     BuildPNGCrush
   fi
 
@@ -211,13 +211,13 @@ BuildPNGCrush(){
   cd "$WORKING_DIRECTORY/Sources/PNGCrush"
 
   echo "==> Decompressing Sources"
-  tar xf "PNGCrush.tar.xz" &> /dev/null
+  7z e "PNGCrush.7z" 
   cd pngcrush*
   echo "==> Compiling PNGCrush"
-  make -j$CPU_CORES pngcrush &> /dev/null
+  make -j$CPU_CORES pngcrush 
   echo "==> Moving binary"
   mv "pngcrush" "$WORKING_DIRECTORY/bin/"
-  rm -rf $PWD &> /dev/null
+  rm -rf $PWD 
 
   cd "$WORKING_DIRECTORY"
 }
@@ -226,22 +226,22 @@ BuildADVComp() {
   echo "${ColourWarning}Building advcomp-git${ColourReset}"
   echo "==> Cloning advcomp"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/advcomp/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/advcomp/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/advcomp/" 
     git clone -q https://github.com/amadvance/advancecomp.git "$WORKING_DIRECTORY/Sources/advcomp/"
   fi
   cd "$WORKING_DIRECTORY/Sources/advcomp/"
   echo "==> Configuring advcomp"
-  ./autogen.sh &> /dev/null
+  ./autogen.sh 
   ## This repetition of autogen is actually intended, for some reason autogen in this project creates files needed by autogen itself, whoops...
-  ./autogen.sh &> /dev/null
-  ./configure &> /dev/null
+  ./autogen.sh 
+  ./configure 
   echo "==> Compiling advcomp"
-  make -j$CPU_CORES &> /dev/null
+  make -j$CPU_CORES 
   echo "==> Moving binaries"
   mv "$WORKING_DIRECTORY/Sources/advcomp/advdef" "$WORKING_DIRECTORY/bin/"
   mv "$WORKING_DIRECTORY/Sources/advcomp/advpng" "$WORKING_DIRECTORY/bin/"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckADVComp() {
@@ -269,12 +269,12 @@ UpdateADVComp() {
     echo "==> Merging"
     git merge origin/master
     echo "==> Building"
-    make -j$CPU_CORES zopflipng &> /dev/null
+    make -j$CPU_CORES zopflipng 
     echo "==> Moving binaries"
     mv "$WORKING_DIRECTORY/Sources/advcomp/advdef" "$WORKING_DIRECTORY/bin/"
     mv "$WORKING_DIRECTORY/Sources/advcomp/advpng" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     ## Not interested in advpng. It is a bonus to keep it.
@@ -289,14 +289,14 @@ UpdateADVComp() {
 
 FetchOptiPNG() {
   echo "${ColourWarning}Fetching OptiPNG (sf)${ColourReset}"
-  mkdir -p "$WORKING_DIRECTORY/Sources/OptiPNG" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/Sources/OptiPNG" 
   cd "$WORKING_DIRECTORY/Sources/OptiPNG"
 
   ##Note: At the time of writing this was actually not the 'latest' source, but has been marked so by the author.
   echo "==> Downloading latest source"
   if [ -f "OptiPNG.tar.xz" ]; then
     echo "==> OptiPNG previously downloaded"
-    wget --content-disposition -O OptiPNG.tar.xz.1 "https://sourceforge.net/projects/optipng/files/latest/download?source=files" &> /dev/null
+    wget --content-disposition -O OptiPNG.tar.xz.1 "https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.6/optipng-0.7.6.tar.gz/download" 
     MD5Orig="$(md5sum "OptiPNG.tar.xz" | cut -d ' ' -f 1)"
     MD5New="$(md5sum "OptiPNG.tar.xz.1" | cut -d ' ' -f 1)"
     if [ ! $MD5Orig == $MD5New ]; then
@@ -314,7 +314,7 @@ FetchOptiPNG() {
       return
     fi
   else
-    wget --content-disposition -O OptiPNG.tar.xz "https://sourceforge.net/projects/optipng/files/latest/download?source=files" &> /dev/null
+    wget --content-disposition -O OptiPNG.tar.xz "https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.6/optipng-0.7.6.tar.gz/download" 
     BuildOptiPNG
   fi
 
@@ -324,16 +324,15 @@ FetchOptiPNG() {
 BuildOptiPNG(){
   echo "${ColourWarning}Building OptiPNG${ColourReset}"
   cd "$WORKING_DIRECTORY/Sources/OptiPNG"
-
   echo "==> Decompressing sources"
-  tar xf "OptiPNG.tar.xz" &> /dev/null
+  tar xf "OptiPNG.tar.xz" 
   cd optipng*
   echo "==> Compiling OptiPNG"
-  ./configure &> /dev/null
-  make -j$CPU_CORES &> /dev/null
+  ./configure 
+  make -j$CPU_CORES 
   echo "==> Moving binary"
   mv "src/optipng/optipng" "$WORKING_DIRECTORY/bin/"
-  rm -rf $PWD &> /dev/null
+  rm -rf $PWD 
 
   cd "$WORKING_DIRECTORY"
 }
@@ -345,13 +344,13 @@ GetPNGOut(){
     echo "${ColourInfo}No static link exists for latest build, if it is outdated consider updating manually and sending a pull request${ColourReset}"
     return
   fi
-  mkdir -p "$WORKING_DIRECTORY/tmp/" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/tmp/" 
   cd "$WORKING_DIRECTORY/tmp/"
 
   ## No static link exists for latest build, must be updated manually.
   echo "==> Downloading latest binary"
-  wget -O pngout.tar.gz "http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux-static.tar.gz" &> /dev/null
-  tar xf "pngout.tar.gz" &> /dev/null
+  wget -O pngout.tar.gz "http://static.jonof.id.au/dl/kenutils/pngout-20150319-linux-static.tar.gz" 
+  tar xf "pngout.tar.gz" 
   mv "pngout"*"/x86_64/pngout-static" "$WORKING_DIRECTORY/bin/pngout"
   rm -rf "$WORKING_DIRECTORY/tmp/"
   cd "$WORKING_DIRECTORY"
@@ -364,13 +363,13 @@ GetTruePNG(){
     echo "${ColourInfo}No static link exists for latest build, if it is outdated consider updating manually and sending a pull request${ColourReset}"
     return
   fi
-  mkdir -p "$WORKING_DIRECTORY/tmp/" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/tmp/" 
   cd "$WORKING_DIRECTORY/tmp/"
 
   ## No static link exists for latest build, must be updated manually.
   echo "==> Downloading latest binary"
-  wget -O truepng.zip "http://x128.ho.ua/clicks/clicks.php?uri=TruePNG_0622.zip" &> /dev/null
-  unzip truepng.zip &> /dev/null
+  wget -O truepng.zip "http://x128.ho.ua/clicks/clicks.php?uri=TruePNG_0622.zip" 
+  unzip truepng.zip 
   mv "TruePNG.exe" "$WORKING_DIRECTORY/bin/"
   rm -rf "$WORKING_DIRECTORY/tmp/"
   cd "$WORKING_DIRECTORY"
@@ -378,12 +377,12 @@ GetTruePNG(){
 
 GetPingo(){
   echo "${ColourWarning}Obtaining Pingo${ColourReset}"
-  mkdir -p "$WORKING_DIRECTORY/Sources/Pingo/" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/Sources/Pingo/" 
   cd "$WORKING_DIRECTORY/Sources/Pingo/"
   ## No static link exists for latest build, must be updated manually.
   if [ -f "$WORKING_DIRECTORY/bin/pingo.exe" ]; then
     echo "==> Pingo previously downloaded"
-    wget -O pingo.zip.1 "http://css-ig.net/tools/pingo.zip" &> /dev/null
+    wget -O pingo.zip.1 "https://css-ig.net/downloads/pingo.zip" 
     MD5Orig="$(md5sum "pingo.zip" | cut -d ' ' -f 1)"
     MD5New="$(md5sum "pingo.zip.1" | cut -d ' ' -f 1)"
     if [ ! $MD5Orig == $MD5New ]; then
@@ -398,8 +397,8 @@ GetPingo(){
     return
   else
     echo "==> Downloading latest binary"
-    wget -O pingo.zip "http://css-ig.net/tools/pingo.zip" &> /dev/null
-    unzip pingo.zip &> /dev/null
+    wget -O pingo.zip "https://css-ig.net/downloads/pingo.zip" 
+    unzip pingo.zip 
     mv "pingo.exe" "$WORKING_DIRECTORY/bin/"
     cd "$WORKING_DIRECTORY"
   fi
@@ -409,16 +408,16 @@ BuildPNGQuant() {
   echo "${ColourWarning}Building pngquant-git${ColourReset}"
   echo "==> Cloning pngquant"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/pngquant/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/pngquant/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/pngquant/" 
     git clone -q https://github.com/pornel/pngquant.git "$WORKING_DIRECTORY/Sources/pngquant/"
   fi
   cd "$WORKING_DIRECTORY/Sources/pngquant/"
   echo "==> Compiling pngquant"
-  make -j$CPU_CORES &> /dev/null
+  make -j$CPU_CORES 
   echo "==> Moving binary"
   mv "$WORKING_DIRECTORY/Sources/pngquant/pngquant" "$WORKING_DIRECTORY/bin/"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckPNGQuant() {
@@ -445,11 +444,11 @@ UpdatePNGQuant() {
     echo "==> Merging"
     git merge origin/master
     echo "==> Building"
-    make -j$CPU_CORES &> /dev/null
+    make -j$CPU_CORES 
     echo "==> Moving binary"
     mv "$WORKING_DIRECTORY/Sources/pngquant/pngquant" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     if [ ! -f "$WORKING_DIRECTORY/bin/pngquant" ]; then
@@ -462,23 +461,23 @@ UpdatePNGQuant() {
 
 FetchJPEGTran() {
   echo "${ColourWarning}Fetching JPEGTran${ColourReset}"
-  mkdir -p "$WORKING_DIRECTORY/Sources/JPEGTran" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/Sources/JPEGTran" 
   cd "$WORKING_DIRECTORY/Sources/JPEGTran"
 
   ##Note: At the time of writing this was actually not the 'latest' source, but has been marked so by the author.
   echo "==> Downloading source from nonstatic link"
-  wget --content-disposition -O JPEGTran.tar.gz "http://www.infai.org/jpeg/files?get=jpegsrc.v9b.tar.gz" &> /dev/null
-  tar xf "JPEGTran.tar.gz" &> /dev/null
+  wget --content-disposition -O JPEGTran.tar.gz "http://www.infai.org/jpeg/files?get=jpegsrc.v9b.tar.gz" 
+  tar xf "JPEGTran.tar.gz" 
   cd jpeg*/
   echo "==> Configuring"
-  autoreconf &> /dev/null
-  ./configure &> /dev/null
+  autoreconf 
+  ./configure 
   echo "==> Building"
-  make -j$CPU_CORES &> /dev/null
+  make -j$CPU_CORES 
   echo "==> Moving binary"
   mv "jpegtran" "$WORKING_DIRECTORY/bin/"
   echo "==> Making clean"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
   cd "$WORKING_DIRECTORY"
 }
 
@@ -486,18 +485,18 @@ BuildJPEGOptim() {
   echo "${ColourWarning}Building jpegoptim-git${ColourReset}"
   echo "==> Cloning jpegoptim"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/jpegoptim/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/jpegoptim/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/jpegoptim/" 
     git clone -q https://github.com/tjko/jpegoptim.git "$WORKING_DIRECTORY/Sources/jpegoptim/"
   fi
   cd "$WORKING_DIRECTORY/Sources/jpegoptim/"
   echo "==> Configuring jpegoptim"
-  ./configure &> /dev/null
+  ./configure 
   echo "==> Compiling jpegoptim"
-  make -j$CPU_CORES &> /dev/null
+  make -j$CPU_CORES 
   echo "==> Moving binary"
   mv "$WORKING_DIRECTORY/Sources/jpegoptim/jpegoptim" "$WORKING_DIRECTORY/bin/"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckJPEGOptim() {
@@ -524,11 +523,11 @@ UpdateJPEGOptim() {
     echo "==> Merging"
     git merge origin/master
     echo "==> Building"
-    make -j$CPU_CORES &> /dev/null
+    make -j$CPU_CORES 
     echo "==> Moving binary"
     mv "$WORKING_DIRECTORY/Sources/jpegoptim/jpegoptim" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     if [ ! -f "$WORKING_DIRECTORY/bin/jpegoptim" ]; then
@@ -543,7 +542,7 @@ BuildJPEGRecompress() {
   echo "${ColourWarning}Building jpegarchive${ColourReset}"
   echo "==> Cloning jpeg-archive"
   if [[ ! -d "$WORKING_DIRECTORY/Sources/jpegarchive/" ]]; then
-    mkdir -p "$WORKING_DIRECTORY/Sources/jpegarchive/" &> /dev/null
+    mkdir -p "$WORKING_DIRECTORY/Sources/jpegarchive/" 
     git clone -q https://github.com/danielgtaylor/jpeg-archive.git "$WORKING_DIRECTORY/Sources/jpegarchive/"
   fi
   cd "$WORKING_DIRECTORY/Sources/jpegarchive/"
@@ -551,18 +550,18 @@ BuildJPEGRecompress() {
     echo "==> Cloning mozjpeg dependency"
     git clone https://github.com/mozilla/mozjpeg.git "mozjpeg"
     cd "mozjpeg"
-    autoreconf --force --install &> /dev/null
-    ./configure --with-jpeg8 &> /dev/null
-    make &> /dev/null
+    autoreconf --force --install 
+    ./configure --with-jpeg8 
+    make 
     echo "==> Installing mozjpeg as a (dependency of JPEGrecompress)"
-    sudo make install &> /dev/null
+    sudo make install 
   fi
   echo "==> Compiling jpegarchive"
-  make -j$CPU_CORES &> /dev/null
+  make -j$CPU_CORES 
   echo "==> Moving binary"
   mv "$WORKING_DIRECTORY/Sources/jpegarchive/jpeg-recompress" "$WORKING_DIRECTORY/bin/jpegrecompress"
   echo "==> Cleaning up"
-  make -j$CPU_CORES clean &> /dev/null
+  make -j$CPU_CORES clean 
 }
 
 CheckJPEGRecompress() {
@@ -589,11 +588,11 @@ UpdateJPEGRecompress() {
     echo "==> Merging"
     git merge origin/master
     echo "==> Building"
-    make -j$CPU_CORES &> /dev/null
+    make -j$CPU_CORES 
     echo "==> Moving binary"
     mv "$WORKING_DIRECTORY/Sources/jpegarchive/jpegrecompress" "$WORKING_DIRECTORY/bin/"
     echo "==> Making clean"
-    make -j$CPU_CORES clean &> /dev/null
+    make -j$CPU_CORES clean 
   else
     echo "==> No changes, not updating"
     if [ ! -f "$WORKING_DIRECTORY/bin/jpegarchive" ]; then
@@ -680,7 +679,7 @@ CenterTextStandout(){
 CheckCommands() {
   for Dependency in ${DEPENDENCY_ARRAY[@]}; do
     ## True if command does not exist. Looks for exit code non-zero.
-    if command "$Dependency" &> /dev/null ; then HAS_DEPENDENCIES=N; fi
+    if command "$Dependency"  ; then HAS_DEPENDENCIES=N; fi
   done
 }
 
@@ -705,8 +704,8 @@ done
 
 if [[ $UPDATE == Y ]]; then
   ## Create the initial directories on update operation. (Safe - mkdir doesn't override, faster than checking)
-  mkdir -p "$WORKING_DIRECTORY/Sources/" &> /dev/null
-  mkdir -p "$WORKING_DIRECTORY/bin/" &> /dev/null
+  mkdir -p "$WORKING_DIRECTORY/Sources/" 
+  mkdir -p "$WORKING_DIRECTORY/bin/" 
 
   if [[ $ENABLE_NONFREE == Y ]]; then GetPNGOut; GetTruePNG; GetPingo; fi
   CheckZopfliPNG
