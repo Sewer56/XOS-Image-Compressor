@@ -1,5 +1,7 @@
 # XOS Image Compressor
 
+Note: The website of the 'Pingo' utility has changed, disallowing downloads unless invoked from site, and thus, to reflect, the user would need to download the utility manually themselves should they wish to use default non-free --c1, --c2, --c3 modes.
+
 An easy to use, very accessible and easy to use portable set of shell scripts that update directly from sources, compile for the target architecture of your machine and act as a wrapper for multiple external utilities performing optimisations on JPEGs and PNGs. Originally intended to compress Android application source code and other media projects as part of my work on halogenOS, named after XOS itself, the utility has been expanded to act as a user multipurpose friendly image compressor.
 
 In short it's a PNG optimiser that makes use of other utilities, that tries to automatically keep those utilities up to date.
